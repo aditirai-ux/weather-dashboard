@@ -13,11 +13,11 @@ router.post('/', async (req: Request, res: Response) => {
       throw new Error('City is required');
     }
     //TODO: get weather data from city name
-    const weatherData = await WeatherService.getWeatherData(city);
+    const weatherData = await WeatherService.getWeatherForCity(city);
 
     // TODO: save city to search history
     await HistoryService.addCity(req.body.city);
-
+    res.json(weatherData);
   } catch (error) {
     res.status(400).json({ error: "Failed to retrieve weather data" });
   }
