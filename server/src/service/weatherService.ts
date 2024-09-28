@@ -12,20 +12,20 @@ class Weather {
   city: string;
   temp: number;
   description: string;
-  icon: string;
+  humidity: number;
 
-  constructor(city: string, temp: number, description: string, icon: string) {
+  constructor(city: string, temp: number, description: string, humidity: number) {
     this.city = city;
     this.temp = temp;
     this.description = description;
-    this.icon = icon;
+    this.humidity = humidity;
   }
 }
 
 // TODO: Complete the WeatherService class
 class WeatherService {
   // TODO: Define the baseURL, API key, and city name properties
-  private baseURL: string;
+  private baseURL: string;  
   private apiKey: string;
   private cityName: string;
 
@@ -35,44 +35,63 @@ class WeatherService {
     this.cityName = '';
   }
   // TODO: Create fetchLocationData method
-  private async fetchLocationData(query: string) {
-    const response = await fetch(query);
-    const data = await response.json();
-    return data;
+  private async fetchLocationData(query: string): Promise<any> {
+    const url = `${this.baseURL}/geo/1.0/direct?q=${query}&limit=1&appid=${this.apiKey}`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch location data");
+      }
+      const data = await response.json();
+      return data[0];
+    } catch (error) {
+      throw new Error("Failed to fetch location data");
+    }
   }
   // TODO: Create destructureLocationData method
-  private destructureLocationData(locationData: Coordinates): Coordinates {
+  private destructureLocationData(locationData: any): Coordinates {
     const { lat, lon } = locationData;
     return { lat, lon };
   }
   // TODO: Create buildGeocodeQuery method
   private buildGeocodeQuery(): string {
-    const { baseURL, apiKey, cityName } = this;
-    return `${baseURL}/geocode/v1/json?q=${cityName}&key=${apiKey}`;
+    return `${this.cityName}`;
   }
   // TODO: Create buildWeatherQuery method
   private buildWeatherQuery(coordinates: Coordinates): string {
-    const { baseURL, apiKey } = this;
     const { lat, lon } = coordinates;
-    return `${baseURL}/weather/1.0/report.json?product=current&latitude=${lat}&longitude=${lon}&key=${apiKey}`;
+    return `${this.baseURL}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}`;
   }
   // TODO: Create fetchAndDestructureLocationData method
-  private async fetchAndDestructureLocationData() {
+  private async fetchAndDestructureLocationData(): Promise<Coordinates> {
     const query = this.buildGeocodeQuery();
     const locationData = await this.fetchLocationData(query);
     return this.destructureLocationData(locationData);
   }
   // TODO: Create fetchWeatherData method
-  private async fetchWeatherData(coordinates: Coordinates) {
+  private async fetchWeatherData(coordinates: Coordinates): Promise<any>   {
     const query = this.buildWeatherQuery(coordinates);
-    const response = await fetch(query);
-    const data = await response.json();
-    return data;
+    try {
+      const response = await fetch(query);
+      if (!response.ok) {
+        throw new Error("Failed to fetch weather data");
+      }
+      return await response.json();
+    }
+    catch (error) {
+      throw new Error("Failed to fetch weather data");
+    }
   }
   // TODO: Build parseCurrentWeather method
-  private parseCurrentWeather(response: any) {
-    const { city, temp, description, icon } = response.data.current_condition[0];
-    return new Weather(city, temp, description, icon);
+  private parseCurrentWeather(response: any): Weather {
+    const { main, weather, name: city } = response; // Destructure city from response
+    const { temp: temperature, humidity } = main;
+    const { description } = weather[0];
+    return new Weather(
+      temperature,
+      humidity,
+      description,
+      city); // Pass city to Weather constructor
   }
   // TODO: Complete buildForecastArray method
   private buildForecastArray(currentWeather: Weather, weatherData: any[]) {
