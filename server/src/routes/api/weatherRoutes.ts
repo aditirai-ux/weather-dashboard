@@ -25,14 +25,26 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // TODO: GET search history
-router.get('/history', async (req: Request, res: Response) => {
+router.get('/history', async (_req: Request, res: Response) => {
   try {
-    const city = await HistoryService.getHistory();
+    const city = await HistoryService.getCities();
     res.json(city);
-  } catch (error) {}
+  } catch (error) {
+    res.status(400).json({ error: "Failed to retrieve search history" });
+  }
 });
 
 // * BONUS TODO: DELETE city from search history
-router.delete('/history/:id', async (req: Request, res: Response) => {});
+router.delete('/history/:id', async (req: Request, res: Response) => {
+  try {
+    if (!req.params.id) {
+      res.status(400).json({msg: 'City ID is required'});
+    }
+    await HistoryService.removeCity(req.params.id);
+    res.json({msg: 'City removed from search history'});
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove city from search history" });
+  }
+});
 
 export default router;
