@@ -1,5 +1,4 @@
 import { Router, type Request, type Response } from 'express';
-// import { get } from 'node:http';
 import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
@@ -28,8 +27,10 @@ router.post('/', async (req: Request, res: Response) => {
 router.get('/history', async (_req: Request, res: Response) => {
   try {
     const city = await HistoryService.getCities();
+    console.log(city);
     res.json(city);
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error: "Failed to retrieve search history" });
   }
 });
