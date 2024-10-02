@@ -7,17 +7,19 @@ const router = Router();
 // TODO: POST Request with city name to retrieve weather data
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { city } = req.body;
-    if (!city) {
+    const { cityName } = req.body;
+    console.log(req.body,"POST")
+    if (!cityName) {
       throw new Error('City is required');
     }
     //TODO: get weather data from city name
-    const weatherData = await WeatherService.getWeatherForCity(city);
+    const weatherData = await WeatherService.getWeatherForCity(cityName);
 
     // TODO: save city to search history
-    await HistoryService.addCity(req.body.city);
+    await HistoryService.addCity(req.body.cityName);
     res.json(weatherData);
   } catch (error) {
+    console.log("POST",error)
     res.status(400).json({ error: "Failed to retrieve weather data" });
   }
   
